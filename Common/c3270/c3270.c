@@ -715,6 +715,12 @@ main(int argc, char *argv[])
     /* Kiosk: never allow the interactive prompt; restrict connections. */
     appres.secure = true;
     kiosk_set_hosts(appres.kiosk_hosts);
+    if (appres.httpd_port != NULL || appres.script_port != NULL ||
+	    appres.socket) {
+	fprintf(stderr, "kiosk build: scripting ports "
+		"(-httpd/-scriptport/-socket) are not permitted\n");
+	exit(1);
+    }
 #endif /*]*/
 
     printf("%s\n\nType 'show copyright' for full copyright information.\n\
