@@ -635,7 +635,9 @@ task_register(void)
 	{ AnMacro,		Macro_action, ACTION_KE },
 	{ AnNvtText,		NvtText_action, 0 },
 	{ AnPause,		Pause_action, 0 },
+#if !defined(X3270_KIOSK) /*[*/
 	{ AnPrompt,		Prompt_action, 0 },
+#endif /*]*/
 	{ AnReadBuffer,		ReadBuffer_action, 0 },
 	{ RESUME_INPUT,		ResumeInput_action, ACTION_HIDDEN },
 	{ AnRequestInput,	RequestInput_action, ACTION_HIDDEN },
