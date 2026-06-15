@@ -1031,6 +1031,11 @@ clean_termname(const char *tn)
 void
 start_help(void)
 {
+    if (appres.secure) {
+	/* Secure/kiosk: never launch an external browser/help process. */
+	return;
+    }
+
     /* Figure out the version. */
     const char *s = build_rpq_version;
     char *url;
