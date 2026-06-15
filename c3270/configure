@@ -647,6 +647,7 @@ ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 PYTHON
+MKFB_KIOSK
 DBCS
 LIBX3270DIR
 MOREPATH
@@ -4377,6 +4378,8 @@ yes)	printf "%s\n" "#define X3270_KIOSK 1" >>confdefs.h
 
 	;;
 esac
+if test "x$enable_kiosk" = xyes; then MKFB_KIOSK="-k"; else MKFB_KIOSK=""; fi
+
 
 
 # Check whether --with-python was given.

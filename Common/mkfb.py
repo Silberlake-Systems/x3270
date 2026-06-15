@@ -39,6 +39,7 @@ class Mode(Flag):
     APL = 0x2
     X3270_DBCS = 0x4
     _WIN32 = 0x8
+    X3270_KIOSK = 0x10
     MASK = 0xfff
 
 # Globals.
@@ -73,7 +74,8 @@ parts = {
     Mode.COLOR.name: Mode.COLOR,
     Mode.APL.name: Mode.APL,
     Mode.X3270_DBCS.name: Mode.X3270_DBCS,
-    Mode._WIN32.name: Mode._WIN32
+    Mode._WIN32.name: Mode._WIN32,
+    Mode.X3270_KIOSK.name: Mode.X3270_KIOSK,
 }
 
 class OutBuffer:
@@ -359,7 +361,7 @@ def mkfb(infiles, ofile: str):
 
 def usage():
     '''Print a usage message and exit'''
-    print('usage: mkfb [-c] -[w] [-o outfile] [infile...]', file=sys.stderr)
+    print('usage: mkfb [-c] [-w] [-k] [-o outfile] [infile...]', file=sys.stderr)
     exit(1)
 
 # Parse the command line.
@@ -375,6 +377,8 @@ while len(args) > 0:
         cmode = True
     elif arg == '-w':
         is_defined |= Mode._WIN32
+    elif arg == '-k':
+        is_defined |= Mode.X3270_KIOSK
     elif arg == '-o':
         if len(args) < 2:
             usage()

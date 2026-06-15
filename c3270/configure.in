@@ -162,6 +162,8 @@ case "$enable_kiosk" in
 yes)	AC_DEFINE(X3270_KIOSK,1)
 	;;
 esac
+if test "x$enable_kiosk" = xyes; then MKFB_KIOSK="-k"; else MKFB_KIOSK=""; fi
+AC_SUBST(MKFB_KIOSK)
 
 dnl Find Python
 AC_ARG_WITH(python,[  --with-python=path      specify path to Python interpreter])
