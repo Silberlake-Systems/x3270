@@ -716,6 +716,7 @@ enable_option_checking
 with_readline
 enable_dbcs
 enable_local_process
+enable_kiosk
 with_python
 '
       ac_precious_vars='build_alias
@@ -1350,6 +1351,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dbcs          leave out DBCS support
   --disable-local-process leave out local process support
+  --enable-kiosk          build a locked-down kiosk binary (no shell/file/print/script access)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4360,6 +4362,17 @@ fi
 
 case "$enable_local_process" in
 ""|yes)	printf "%s\n" "#define X3270_LOCAL_PROCESS 1" >>confdefs.h
+
+	;;
+esac
+# Check whether --enable-kiosk was given.
+if test ${enable_kiosk+y}
+then :
+  enableval=$enable_kiosk;
+fi
+
+case "$enable_kiosk" in
+yes)	printf "%s\n" "#define X3270_KIOSK 1" >>confdefs.h
 
 	;;
 esac

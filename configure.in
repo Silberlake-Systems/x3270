@@ -39,6 +39,7 @@ AC_ARG_ENABLE(x3270if,[  --enable-x3270if        build x3270if])
 AC_ARG_ENABLE(playback,[  --enable-playback       build playback])
 AC_ARG_ENABLE(mitm,[  --enable-mitm           build mitm])
 AC_ARG_ENABLE(wc3270,[  --enable-wc3270         build wc3270])
+AC_ARG_ENABLE(kiosk,[  --enable-kiosk          build a locked-down, c3270-only kiosk (Unix)])
 
 dnl Figure out if this is a Windows build or not.
 . Common/dirnames
@@ -259,6 +260,25 @@ if test "x$enable_x3270" = xyes -o \
 fi
 unset do_ibm_hosts
 if test "x$enable_x3270" = xyes -o "x$enable_c3270" = xyes; then do_ibm_hosts=yes; fi
+
+dnl Kiosk mode builds only a hardened c3270.
+if test "x$enable_kiosk" = xyes; then
+    if test $MODE != unix; then
+	AC_MSG_ERROR([--enable-kiosk is only supported on Unix (c3270)])
+    fi
+    if test "x$enable_c3270" = xno; then
+	AC_MSG_ERROR([--enable-kiosk requires c3270])
+    fi
+    enable_c3270=yes
+    enable_x3270=no
+    enable_tcl3270=no
+    enable_s3270=no
+    enable_b3270=no
+    enable_pr3287=no
+    enable_playback=no
+    enable_mitm=no
+    do_ibm_hosts=yes
+fi
 
 dnl Start recursing.
 if test "x$enable_lib" = xyes; then

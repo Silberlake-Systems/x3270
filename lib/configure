@@ -730,6 +730,7 @@ with_openssl
 with_iconv
 enable_dbcs
 enable_local_process
+enable_kiosk
 enable_poll
 with_python
 '
@@ -1368,6 +1369,7 @@ Optional Features:
   --enable-mock-tls       use TLS mock for testing
   --disable-dbcs          leave out DBCS support
   --disable-local-process leave out local process support
+  --enable-kiosk          build a locked-down kiosk binary (no shell/file/print/script access)
   --disable-poll          leave out poll() support
 
 Optional Packages:
@@ -4974,6 +4976,17 @@ fi
 
 case "$enable_local_process" in
 ""|yes)	printf "%s\n" "#define X3270_LOCAL_PROCESS 1" >>confdefs.h
+
+	;;
+esac
+# Check whether --enable-kiosk was given.
+if test ${enable_kiosk+y}
+then :
+  enableval=$enable_kiosk;
+fi
+
+case "$enable_kiosk" in
+yes)	printf "%s\n" "#define X3270_KIOSK 1" >>confdefs.h
 
 	;;
 esac

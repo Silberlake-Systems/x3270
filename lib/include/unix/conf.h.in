@@ -60,4 +60,5 @@
 
 /* Optional parts. */
 #undef X3270_LOCAL_PROCESS
+#undef X3270_KIOSK
 #undef TAIL_PID

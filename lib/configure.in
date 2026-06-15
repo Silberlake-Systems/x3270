@@ -248,6 +248,11 @@ case "$enable_local_process" in
 ""|yes)	AC_DEFINE(X3270_LOCAL_PROCESS,1)
 	;;
 esac
+AC_ARG_ENABLE(kiosk,[  --enable-kiosk          build a locked-down kiosk binary (no shell/file/print/script access)])
+case "$enable_kiosk" in
+yes)	AC_DEFINE(X3270_KIOSK,1)
+	;;
+esac
 
 dnl Set up TLS modules and libraries
 if test "$enable_mock_tls" = yes
