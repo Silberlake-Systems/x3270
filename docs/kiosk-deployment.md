@@ -386,13 +386,56 @@ All eight checks must pass. The script is designed to be re-run after any source
 Boot the kiosk and log in (or observe via a monitor). For each item, confirm the stated behavior:
 
 - [ ] **No interactive prompt.** Press Escape. Confirm no `c3270>` prompt appears and c3270 continues running normally.
-- [ ] **File menu is restricted.** Open the File menu (if accessible via function key or menu bar). Confirm there are no Quit, Disconnect, Print, File Transfer, or Trace entries.
-- [ ] **Off-list connection refused.** If possible, edit a test resource to attempt `Connect(10.0.0.1:23)` (a host not in `kioskHosts`). Confirm c3270 displays a "not permitted" or similar denial message and does not connect. Restore the correct configuration afterward.
+- [ ] **File menu is restricted.** Open the File menu (if accessible via function key or menu bar). Confirm there are no Quit, Disconnect, Print, File Transfer, or Trace entries. Also confirm the Help menu contains no Copyright, Status, About, or Display-Keymap items.
+- [ ] **Off-list connection refused.** If possible, temporarily install a test keymap (see below) that binds a key to `Connect(10.0.0.1:23)` — a host NOT in `kioskHosts`. Trigger it. Confirm c3270 displays a "not permitted" or similar denial message and does not connect. Remove the test keymap afterward.
 - [ ] **Ctrl-Z does nothing.** With c3270 running, press Ctrl-Z. Confirm the process is not suspended and no shell prompt appears.
 - [ ] **Ctrl-\\ does nothing.** Press Ctrl-\\. Confirm no quit/abort occurs.
 - [ ] **Ctrl-Alt-Delete does not reboot.** Press Ctrl-Alt-Delete. Confirm no reboot occurs (masked above).
 - [ ] **Host disconnect reconnects.** Arrange for the host to drop the connection (or restart the host service). Confirm c3270 reconnects automatically (via `-reconnect`) rather than exiting to a shell.
-- [ ] **Scripting port refused.** On the kiosk (or a copy), run: `c3270 -scriptport 12345`. Confirm it prints a refusal message and exits non-zero immediately.
+- [ ] **Scripting port refused at startup.** On a test copy of the kiosk binary, run: `c3270 -scriptport 12345`. Confirm it prints a refusal message and exits non-zero immediately. (The live kiosk cannot be tested this way — the binary exits before accepting any connection.)
 - [ ] **No shell on crash.** Kill c3270 from another terminal or via Ctrl-C (if possible). Confirm the respawn loop restarts c3270 within 1–2 seconds and no shell prompt is visible.
 - [ ] **kiosk user cannot write to /home/kiosk.** As the kiosk user (if you have an additional session), run `touch /home/kiosk/test`. Confirm permission denied.
 - [ ] **Other VTs are dead.** Press Alt-F2 through Alt-F6. Confirm no login prompt appears.
+- [ ] **No startup errors.** Observe the first few seconds after c3270 launches. Confirm no `[Press <Enter>]` pager prompt and no "Unknown action" error message appear. The screen should show the host connection attempt or connected state immediately.
+
+### Extended action-level checks (use a test keymap)
+
+The following checks require temporarily installing a root-owned keymap that binds specific keys to the actions under test. After each verification session, remove the keymap. The kiosk user cannot install keymaps (the home directory is read-only and `~/.c3270pro` is ignored), so the test keymap must be placed under `/etc/x3270/` and referenced via `-xrm 'c3270.keymap: ...'` in the respawn wrapper, or passed with a one-shot invocation for testing.
+
+**Install the test keymap** (example — adjust key bindings to suit your keyboard):
+
+```sh
+sudo tee /etc/x3270/kiosk-test.keymap > /dev/null << 'EOF'
+! Test keymap: install for verification, then REMOVE.
+! Binds F1-F7 to actions that must be blocked in kiosk mode.
+!
+Key<F1>: Set(scriptPort,"12399")
+Key<F2>: Set(httpd,"127.0.0.1:8099")
+Key<F3>: Set(printerLu,"x")
+Key<F4>: Help(online)
+Key<F5>: Prompt()
+Key<F6>: Escape("Show(copyright)")
+Key<F7>: Connect(10.0.0.1:23)
+EOF
+sudo chmod 644 /etc/x3270/kiosk-test.keymap
+```
+
+Add `-xrm 'c3270.keymap: kiosk-test'` to the respawn wrapper temporarily, restart c3270, then work through each binding:
+
+- [ ] **Runtime port re-enable refused — scriptPort.** Press F1 (`Set(scriptPort,"12399")`). Immediately after: `ss -ltn | grep 12399`. Confirm no socket is opened. c3270 must silently ignore or log-and-refuse the `Set()` call without opening a port.
+- [ ] **Runtime port re-enable refused — httpd.** Press F2 (`Set(httpd,"127.0.0.1:8099")`). Immediately after: `ss -ltn | grep 8099`. Confirm no socket is opened.
+- [ ] **Printer session blocked.** Press F3 (`Set(printerLu,"x")`). Run `pgrep -a pr3287`. Confirm no pr3287 process was spawned. (Host-driven auto-start is also blocked by the same guard, but testing the `Set()` path is sufficient to confirm the code path is locked.)
+- [ ] **Help(online) does not launch a browser.** Press F4 (`Help(online)`). Run `pgrep -a xdg-open; pgrep -a firefox; pgrep -a chromium`. Confirm no browser process was spawned and no browser window appeared. c3270 must silently discard the call in secure mode.
+- [ ] **Prompt() is unknown.** Press F5 (`Prompt()`). Confirm c3270 displays "Unknown action: Prompt" (or equivalent) and does NOT spawn an interactive shell. Run `pgrep -P $$` or `pstree -p <c3270-pid>` to confirm no child process was forked.
+- [ ] **Pager/shell-escape via Escape() is blocked.** Press F6 (`Escape("Show(copyright)")`). Confirm no subprocess is spawned (`pgrep -P <c3270-pid>` unchanged) and no pager or sub-shell appears. The action must be a no-op in kiosk mode.
+- [ ] **Off-list Connect refused (extended).** Press F7 (`Connect(10.0.0.1:23)`). Confirm c3270 displays a "not permitted" denial and does not open a TCP connection to `10.0.0.1:23`. (Cross-check with `ss -tn` if needed.)
+
+**Remove the test keymap when done:**
+
+```sh
+sudo rm /etc/x3270/kiosk-test.keymap
+# Remove the -xrm 'c3270.keymap: kiosk-test' line from the respawn wrapper.
+sudo systemctl restart getty@tty1.service   # restarts the kiosk session
+```
+
+Confirm after removal that c3270 starts cleanly with no "Unknown action" errors.
