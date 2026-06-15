@@ -76,6 +76,7 @@
 #include "icmdc.h"
 #include "idle.h"
 #include "keymap.h"
+#include "kiosk.h"
 #include "kybd.h"
 #include "login_macro.h"
 #include "model.h"
@@ -709,6 +710,12 @@ main(int argc, char *argv[])
 #endif /*]*/
 
     argc = parse_command_line(argc, (const char **)argv, &cl_hostname);
+
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: never allow the interactive prompt; restrict connections. */
+    appres.secure = true;
+    kiosk_set_hosts(appres.kiosk_hosts);
+#endif /*]*/
 
     printf("%s\n\nType 'show copyright' for full copyright information.\n\
 Type 'help' for help information.\n\n",
@@ -2425,6 +2432,9 @@ c3270_register(void)
 	{ ResIdleCommandEnabled,aoffset(idle_command_enabled),XRM_BOOLEAN },
 	{ ResIdleTimeout,aoffset(idle_timeout),		XRM_STRING },
 	{ ResKeymap,	aoffset(interactive.key_map),	XRM_STRING },
+#if defined(X3270_KIOSK) /*[*/
+	{ ResKioskHosts,	aoffset(kiosk_hosts),		XRM_STRING },
+#endif /*]*/
 	{ ResMenuBar,	aoffset(interactive.menubar),	XRM_BOOLEAN },
 	{ ResNoPrompt,	aoffset(secure),		XRM_BOOLEAN },
 	{ ResOia,	aoffset(c3270.oia),		XRM_BOOLEAN },

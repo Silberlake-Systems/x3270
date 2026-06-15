@@ -35,7 +35,10 @@
 /* Parse a comma-separated list of permitted Connect() targets (NULL clears it). */
 void kiosk_set_hosts(const char *list);
 
-/* True iff target matches a configured allow-list entry (trimmed, case-insensitive).
+/* True iff target is permitted by the configured allow-list.
+   target is the FULL Connect() string (host, optional :port, and any LU/prefix/accept
+   decorators); it is trimmed and compared case-insensitively against each entry verbatim —
+   allow-list entries must be the exact strings users or macros pass to Connect().
    With no list configured, returns false (deny-by-default). */
 bool kiosk_host_allowed(const char *target);
 

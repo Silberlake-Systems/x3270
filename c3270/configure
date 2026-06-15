@@ -4360,6 +4360,7 @@ then :
   enableval=$enable_local_process;
 fi
 
+if test "x$enable_kiosk" = xyes; then enable_local_process=no; fi
 case "$enable_local_process" in
 ""|yes)	printf "%s\n" "#define X3270_LOCAL_PROCESS 1" >>confdefs.h
 

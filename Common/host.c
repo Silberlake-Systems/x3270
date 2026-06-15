@@ -43,6 +43,7 @@
 #include "glue_gui.h"
 #include "host.h"
 #include "host_gui.h"
+#include "kiosk.h"
 #include "login_macro.h"
 #include "names.h"
 #include "popups.h"
@@ -530,6 +531,13 @@ host_connect(const char *n, enum iaction ia)
     const char *localprocess_cmd = NULL;
     bool has_colons = false;
     net_connect_t nc;
+
+#if defined(X3270_KIOSK) /*[*/
+    if (!kiosk_host_allowed(n)) {
+	popup_an_error("Connection to \"%s\" is not permitted", n);
+	return false;
+    }
+#endif /*]*/
 
     if (!glue_gui_open_safe()) {
 	popup_an_error("User interface in the wrong state");
