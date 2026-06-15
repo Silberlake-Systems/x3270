@@ -130,6 +130,7 @@
 #define ResHostColorForProtectedIntensified ResHostColorFor "ProtectedIntensified"
 #define ResHostname		"hostname"
 #define ResHostsFile		"hostsFile"
+#define ResKioskHosts		"kioskHosts"
 #define ResHttpd		"httpd"
 #define ResIconFont		"iconFont"
 #define ResIconLabelFont	"iconLabelFont"
