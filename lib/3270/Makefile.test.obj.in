@@ -37,19 +37,21 @@ UTF8_OBJS = utf8_test.o utf8.o sa_malloc.o
 URI_OBJS = uri_test.o uri.o percent_decode.o varbuf.o sa_malloc.o
 DEVNAME_OBJS = devname_test.o devname.o varbuf.o sa_malloc.o
 CATV_OBJS = catv_test.o xscatv.o utf8.o varbuf.o ctype32.o sa_malloc.o
+KIOSK_OBJS = kiosk_test.o kiosk.o sa_malloc.o
 
 CCOPTIONS = @CCOPTIONS@
 XCPPFLAGS = -I$(THIS) -I$(THIS)/../include/unix -I$(THIS)/../include -I$(TOP)/include @CPPFLAGS@
 override CFLAGS += $(EXTRA_FLAGS) $(CCOPTIONS) $(CDEBUGFLAGS) $(XCPPFLAGS) -DTEST -fprofile-arcs -ftest-coverage @CFLAGS@
 
-test: json_test bind_opts_test utf8_test uri_test devname_test catv_test
-	$(RM) json_test.gcda bind_opts_test.gcda utf8_test.gcda devname_test.gcda
+test: json_test bind_opts_test utf8_test uri_test devname_test catv_test kiosk_test
+	$(RM) json_test.gcda bind_opts_test.gcda utf8_test.gcda devname_test.gcda kiosk_test.gcda
 	./json_test $(TESTOPTIONS)
 	./bind_opts_test $(TESTOPTIONS)
 	./utf8_test $(TESTOPTIONS)
 	./uri_test $(TESTOPTIONS)
 	./devname_test $(TESTOPTIONS)
 	./catv_test $(TESTOPTIONS)
+	./kiosk_test $(TESTOPTIONS)
 
 json_test: $(JSON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(JSON_OBJS)
@@ -68,6 +70,9 @@ devname_test: $(DEVNAME_OBJS)
 
 catv_test: $(CATV_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(CATV_OBJS)
+
+kiosk_test: $(KIOSK_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(KIOSK_OBJS)
 
 coverage: json_coverage bind_opts_coverage utf8_coverage uri_coverage devname_coverage catv_coverage
 
@@ -99,10 +104,11 @@ clean:
 	$(RM) *.o *.d *.gcda *.gcno *.gcov
 
 clobber: clean
-	$(RM) json_test bind_opts_test utf8_test uri_test devname_test catv_test
+	$(RM) json_test bind_opts_test utf8_test uri_test devname_test catv_test kiosk_test
 
 -include $(JSON_OBJS:.o=.d)
 -include $(BIND_OPTS_OBJS:.o=.d)
 -include $(UTF8_OBJS:.o=.d)
 -include $(URI_OBJS:.o=.d)
 -include $(CATV_OBJS:.o=.d)
+-include $(KIOSK_OBJS:.o=.d)

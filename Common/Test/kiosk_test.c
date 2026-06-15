@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2026 Paul Mattes.
+ * Copyright (c) 2024 Paul Mattes.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,50 +26,54 @@
  */
 
 /*
- *	conf.h
- *              System-specific #defines for libraries and library functions.
- *		Automatically generated from conf.h.in by configure.
+ *	kiosk_test.c
+ *		Kiosk host allow-list unit tests.
  */
+#include "globals.h"
+#include <assert.h>
+#include "kiosk.h"
 
+int
+main(int argc, char *argv[])
+{
+    bool verbose = false;
 
-/* Libraries. */
-#undef HAVE_LIBNCURSESW
-#undef HAVE_LIBNCURSES
-#undef HAVE_LIBCURSES
-#undef HAVE_LIBREADLINE
+    if (argc > 1 && !strcmp(argv[1], "-v")) {
+	verbose = true;
+    }
 
-/* Header files. */
-#undef HAVE_NCURSESW_NCURSES_H
-#undef HAVE_NCURSES_NCURSES_H
-#undef HAVE_NCURSES_H
-#undef HAVE_CURSES_H
-#undef HAVE_NCURSESW_TERM_H
-#undef HAVE_NCURSES_TERM_H
-#undef HAVE_TERM_H
-#undef HAVE_SYS_SELECT_H
-#undef HAVE_READLINE_HISTORY_H
-#undef HAVE_PTY_H
-#undef HAVE_LIBUTIL_H
-#undef HAVE_UTIL_H
-#undef HAVE_GETOPT_H
+    /* Deny-by-default when nothing configured. */
+    assert(!kiosk_host_allowed("127.0.0.1:992"));
 
-/* Uncommon functions. */
-#undef HAVE_VASPRINTF
-#undef HAVE_FSEEKO
-#undef HAVE_FORKPTY
-#undef HAVE_USE_DEFAULT_COLORS
-#undef HAVE_TIPARM
-#undef HAVE_RESIZETERM
+    kiosk_set_hosts("127.0.0.1:992, 127.0.0.1:2023 ,localhost:23");
 
-/* Default pager. */
-#define LESSPATH ""
-#define MOREPATH ""
+    /* Exact members allowed. */
+    assert(kiosk_host_allowed("127.0.0.1:992"));
+    assert(kiosk_host_allowed("127.0.0.1:2023"));
 
-/* Wide curses. */
-#undef CURSES_WIDE
+    /* Whitespace tolerance and case-insensitivity. */
+    assert(kiosk_host_allowed("  127.0.0.1:992  "));
+    assert(kiosk_host_allowed("LOCALHOST:23"));
 
-/* Configuration options. */
+    /* Non-members denied (no substring/prefix escapes). */
+    assert(!kiosk_host_allowed("127.0.0.1:2024"));
+    assert(!kiosk_host_allowed("127.0.0.1"));
+    assert(!kiosk_host_allowed("evil.example.com:23"));
+    assert(!kiosk_host_allowed("127.0.0.1:992 ; rm -rf /"));
+    assert(!kiosk_host_allowed(""));
 
-/* Optional parts. */
-#undef X3270_LOCAL_PROCESS
-#undef X3270_KIOSK
+    /* Reconfiguring replaces the list. */
+    kiosk_set_hosts("only:1");
+    assert(kiosk_host_allowed("only:1"));
+    assert(!kiosk_host_allowed("127.0.0.1:992"));
+
+    /* Clearing denies everything. */
+    kiosk_set_hosts(NULL);
+    assert(!kiosk_host_allowed("only:1"));
+
+    if (verbose) {
+	printf("All kiosk tests - PASS\n");
+    }
+    printf("\nPASS\n");
+    return 0;
+}

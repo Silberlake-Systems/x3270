@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2026 Paul Mattes.
+ * Copyright (c) 2024 Paul Mattes.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,50 +26,90 @@
  */
 
 /*
- *	conf.h
- *              System-specific #defines for libraries and library functions.
- *		Automatically generated from conf.h.in by configure.
+ *	kiosk.c
+ *		Kiosk-mode host allow-list.
  */
 
+#include "globals.h"
+#include "kiosk.h"
 
-/* Libraries. */
-#undef HAVE_LIBNCURSESW
-#undef HAVE_LIBNCURSES
-#undef HAVE_LIBCURSES
-#undef HAVE_LIBREADLINE
+static char **allow = NULL;
+static int n_allow = 0;
 
-/* Header files. */
-#undef HAVE_NCURSESW_NCURSES_H
-#undef HAVE_NCURSES_NCURSES_H
-#undef HAVE_NCURSES_H
-#undef HAVE_CURSES_H
-#undef HAVE_NCURSESW_TERM_H
-#undef HAVE_NCURSES_TERM_H
-#undef HAVE_TERM_H
-#undef HAVE_SYS_SELECT_H
-#undef HAVE_READLINE_HISTORY_H
-#undef HAVE_PTY_H
-#undef HAVE_LIBUTIL_H
-#undef HAVE_UTIL_H
-#undef HAVE_GETOPT_H
+/* Trim leading/trailing ASCII whitespace; return a freshly-allocated copy. */
+static char *
+trim_dup(const char *s, size_t len)
+{
+    char *out;
 
-/* Uncommon functions. */
-#undef HAVE_VASPRINTF
-#undef HAVE_FSEEKO
-#undef HAVE_FORKPTY
-#undef HAVE_USE_DEFAULT_COLORS
-#undef HAVE_TIPARM
-#undef HAVE_RESIZETERM
+    while (len > 0 && isspace((unsigned char)*s)) {
+	s++;
+	len--;
+    }
+    while (len > 0 && isspace((unsigned char)s[len - 1])) {
+	len--;
+    }
+    out = Malloc(len + 1);
+    memcpy(out, s, len);
+    out[len] = '\0';
+    return out;
+}
 
-/* Default pager. */
-#define LESSPATH ""
-#define MOREPATH ""
+void
+kiosk_set_hosts(const char *list)
+{
+    const char *p;
+    int i;
 
-/* Wide curses. */
-#undef CURSES_WIDE
+    for (i = 0; i < n_allow; i++) {
+	Free(allow[i]);
+    }
+    Free(allow);
+    allow = NULL;
+    n_allow = 0;
 
-/* Configuration options. */
+    if (list == NULL) {
+	return;
+    }
 
-/* Optional parts. */
-#undef X3270_LOCAL_PROCESS
-#undef X3270_KIOSK
+    p = list;
+    while (*p != '\0') {
+	const char *start = p;
+	char *entry;
+
+	while (*p != '\0' && *p != ',') {
+	    p++;
+	}
+	entry = trim_dup(start, (size_t)(p - start));
+	if (entry[0] != '\0') {
+	    allow = (char **)Realloc(allow, (n_allow + 1) * sizeof(char *));
+	    allow[n_allow++] = entry;
+	} else {
+	    Free(entry);
+	}
+	if (*p == ',') {
+	    p++;
+	}
+    }
+}
+
+bool
+kiosk_host_allowed(const char *target)
+{
+    char *t;
+    bool ok = false;
+    int i;
+
+    if (target == NULL || allow == NULL) {
+	return false;
+    }
+    t = trim_dup(target, strlen(target));
+    for (i = 0; i < n_allow; i++) {
+	if (!strcasecmp(t, allow[i])) {
+	    ok = true;
+	    break;
+	}
+    }
+    Free(t);
+    return ok;
+}

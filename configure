@@ -694,6 +694,7 @@ enable_x3270if
 enable_playback
 enable_mitm
 enable_wc3270
+enable_kiosk
 with_python
 '
       ac_precious_vars='build_alias
@@ -1349,6 +1350,7 @@ Optional Features:
   --enable-playback       build playback
   --enable-mitm           build mitm
   --enable-wc3270         build wc3270
+  --enable-kiosk          build a locked-down, c3270-only kiosk (Unix)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2033,6 +2035,12 @@ then :
   enableval=$enable_wc3270;
 fi
 
+# Check whether --enable-kiosk was given.
+if test ${enable_kiosk+y}
+then :
+  enableval=$enable_kiosk;
+fi
+
 
 . Common/dirnames
 case "$host" in
@@ -2441,6 +2449,24 @@ if test "x$enable_x3270" = xyes -o \
 fi
 unset do_ibm_hosts
 if test "x$enable_x3270" = xyes -o "x$enable_c3270" = xyes; then do_ibm_hosts=yes; fi
+
+if test "x$enable_kiosk" = xyes; then
+    if test $MODE != unix; then
+	as_fn_error $? "--enable-kiosk is only supported on Unix (c3270)" "$LINENO" 5
+    fi
+    if test "x$enable_c3270" = xno; then
+	as_fn_error $? "--enable-kiosk requires c3270" "$LINENO" 5
+    fi
+    enable_c3270=yes
+    enable_x3270=no
+    enable_tcl3270=no
+    enable_s3270=no
+    enable_b3270=no
+    enable_pr3287=no
+    enable_playback=no
+    enable_mitm=no
+    do_ibm_hosts=yes
+fi
 
 if test "x$enable_lib" = xyes; then
     if test $MODE = unix; then

@@ -1156,6 +1156,17 @@ Script_action(ia_t ia, unsigned argc, const char **argv)
 
     action_debug(AnScript, ia, argc, argv);
 
+    if (appres.secure) {
+	/*
+	 * Secure/kiosk: never fork/exec a child script process. This is the
+	 * fork/exec choke point for Script(), and is also reached directly by
+	 * Prompt(), so guarding it here closes both routes regardless of which
+	 * actions remain registered.
+	 */
+	popup_an_error("%s is disabled in secure mode", AnScript);
+	return false;
+    }
+
     for (;;) {
 	if (argc < 1) {
 	    popup_an_error(AnScript "() requires at least one argument");
@@ -1498,6 +1509,12 @@ Prompt_action(ia_t ia, unsigned argc, const char **argv)
 
     action_debug(AnPrompt, ia, argc, argv);
     if (check_argc(AnPrompt, argc, 0, 3) < 0) {
+	return false;
+    }
+
+    if (appres.secure) {
+	/* Secure/kiosk: never spawn an interactive x3270if/shell prompt. */
+	popup_an_error("%s is disabled in secure mode", AnPrompt);
 	return false;
     }
 

@@ -167,7 +167,9 @@ static ioid_t ft_start_id = NULL_IOID;
 static void ft_connected(bool ignored);
 static void ft_in3270(bool ignored);
 
+#if !defined(X3270_KIOSK) /*[*/
 static action_t Transfer_action;
+#endif /*]*/
 
 /*
  * Toggle the buffer size.
@@ -203,16 +205,20 @@ toggle_ft_buffer_size(const char *name _is_unused, const char *value, unsigned f
 void
 ft_register(void)
 {
+#if !defined(X3270_KIOSK) /*[*/
     static action_table_t ft_actions[] = {
 	{ AnTransfer,	Transfer_action,	ACTION_KE }
     };
+#endif /*]*/
 
     /* Register for state changes. */
     register_schange(ST_CONNECT, ft_connected);
     register_schange(ST_3270_MODE, ft_in3270);
 
+#if !defined(X3270_KIOSK) /*[*/
     /* Register actions. */
     register_actions(ft_actions, array_count(ft_actions));
+#endif /*]*/
 
     /* Register the toggles. */
     register_extended_toggle(ResFtBufferSize, toggle_ft_buffer_size, NULL,

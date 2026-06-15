@@ -76,6 +76,7 @@
 #include "icmdc.h"
 #include "idle.h"
 #include "keymap.h"
+#include "kiosk.h"
 #include "kybd.h"
 #include "login_macro.h"
 #include "model.h"
@@ -710,6 +711,18 @@ main(int argc, char *argv[])
 
     argc = parse_command_line(argc, (const char **)argv, &cl_hostname);
 
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: never allow the interactive prompt; restrict connections. */
+    appres.secure = true;
+    kiosk_set_hosts(appres.kiosk_hosts);
+    if (appres.httpd_port != NULL || appres.script_port != NULL ||
+	    appres.socket) {
+	fprintf(stderr, "kiosk build: scripting ports "
+		"(-httpd/-scriptport/-socket) are not permitted\n");
+	exit(1);
+    }
+#endif /*]*/
+
     printf("%s\n\nType 'show copyright' for full copyright information.\n\
 Type 'help' for help information.\n\n",
 	    get_about());
@@ -815,6 +828,11 @@ Type 'help' for help information.\n\n",
     /* Handle run-time signals. */
     signal(SIGINT, common_handler);
     signal(SIGTSTP, common_handler);
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: do not let Ctrl-\ (SIGQUIT) or Ctrl-Z (SIGTSTP) terminate/suspend. */
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+#endif /*]*/
 #endif /*]*/
     task_cb_init_ir_state(&command_ir_state);
 
@@ -990,11 +1008,13 @@ synchronous_signal(iosrc_t fd, ioid_t id)
 #if defined(HAVE_LIBREADLINE) /*[*/
 	    rl_callback_handler_remove();
 #endif /*]*/
+#if !defined(X3270_KIOSK) /*[*/
 	    kill(getpid(), SIGSTOP);
 	    /* Process stops here. The following is run when it resumes. */
 	    if (!PAGER_RUNNING) {
 		display_prompt();
 	    }
+#endif /*]*/
 	}
     }
 }
@@ -1389,6 +1409,17 @@ pager_exit(ioid_t id, int status)
 FILE *
 start_pager(void)
 {
+#if defined(X3270_KIOSK) /*[*/
+    /*
+     * Kiosk: never spawn a pager subprocess. A pager (less/more) exposes
+     * shell (!) and editor (v) escapes, which would be a full breakout.
+     * Send output straight to stdout instead.
+     */
+    if (pager.fp == NULL) {
+	pager.fp = stdout;
+    }
+    return pager.fp;
+#endif /*]*/
 #if !defined(_WIN32) /*[*/
     static char *lesspath = LESSPATH;
     static char *lesscmd = LESSPATH " -EXR";
@@ -1742,6 +1773,10 @@ Escape_action(ia_t ia, unsigned argc, const char **argv)
     }
 
     if (!escaped) {
+#if defined(X3270_KIOSK) /*[*/
+	/* Kiosk: Escape() never opens the prompt or runs a command. */
+	return true;
+#endif /*]*/
 	if (appres.secure && argc == 0) {
 	    /* Plain Escape() does nothing when secure. */
 	    return true;
@@ -2012,6 +2047,11 @@ merge_profile(void)
     if (getenv(NO_PROFILE_ENV) != NULL) {
 	return did_read;
     }
+
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: ignore the user's ~/.c3270pro; only root-installed resources apply. */
+    return did_read;
+#endif /*]*/
 
     /* Read the file. */
     fname = getenv(PROFILE_ENV);
@@ -2425,6 +2465,9 @@ c3270_register(void)
 	{ ResIdleCommandEnabled,aoffset(idle_command_enabled),XRM_BOOLEAN },
 	{ ResIdleTimeout,aoffset(idle_timeout),		XRM_STRING },
 	{ ResKeymap,	aoffset(interactive.key_map),	XRM_STRING },
+#if defined(X3270_KIOSK) /*[*/
+	{ ResKioskHosts,	aoffset(kiosk_hosts),		XRM_STRING },
+#endif /*]*/
 	{ ResMenuBar,	aoffset(interactive.menubar),	XRM_BOOLEAN },
 	{ ResNoPrompt,	aoffset(secure),		XRM_BOOLEAN },
 	{ ResOia,	aoffset(c3270.oia),		XRM_BOOLEAN },

@@ -53,10 +53,12 @@ keymap.base: \n\
         Alt <Key>M: Compose()\n\
         Alt <Key>n: Menu()\n\
         Alt <Key>N: Menu()\n\
+#ifndef X3270_KIOSK
         Alt <Key>p: PrintText()\n\
         Alt <Key>P: PrintText()\n\
         Alt <Key>q: Quit(-force)\n\
         Alt <Key>Q: Quit(-force)\n\
+#endif
         Alt <Key>v: Paste(-nomargin)\n\
        Ctrl <Key>v: Paste()\n\
        Ctrl <Key>x: Cut()\n\
@@ -137,8 +139,10 @@ x3270.keymap.base: \n\
      Ctrl<Key>a <Key>l: Redraw()\n\
      Ctrl<Key>a <Key>m: Compose()\n\
      Ctrl<Key>a <Key>n: Menu()\n\
+#ifndef X3270_KIOSK
      Ctrl<Key>a <Key>p: PrintText()\n\
      Ctrl<Key>a <Key>q: Quit(-force)\n\
+#endif
      Ctrl<Key>a <Key>^: Key(notsign)\n\
                <Key>DC: Delete()\n\
                <Key>UP: Up()\n\

@@ -66,6 +66,7 @@ typedef struct {
     bool	 highlight_bold;
     char	*hostname;
     char	*hostsfile;
+    char	*kiosk_hosts;
     char	*httpd_port;
     char	*idle_command;
     bool	 idle_command_enabled;

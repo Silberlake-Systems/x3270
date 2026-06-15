@@ -152,10 +152,18 @@ no)	;;
 esac
 AC_SUBST(DBCS)
 AC_ARG_ENABLE(local_process,[  --disable-local-process leave out local process support])
+if test "x$enable_kiosk" = xyes; then enable_local_process=no; fi
 case "$enable_local_process" in
 ""|yes)	AC_DEFINE(X3270_LOCAL_PROCESS,1)
 	;;
 esac
+AC_ARG_ENABLE(kiosk,[  --enable-kiosk          build a locked-down kiosk binary (no shell/file/print/script access)])
+case "$enable_kiosk" in
+yes)	AC_DEFINE(X3270_KIOSK,1)
+	;;
+esac
+if test "x$enable_kiosk" = xyes; then MKFB_KIOSK="-k"; else MKFB_KIOSK=""; fi
+AC_SUBST(MKFB_KIOSK)
 
 dnl Find Python
 AC_ARG_WITH(python,[  --with-python=path      specify path to Python interpreter])

@@ -65,9 +65,10 @@ version.o: mkversion.py $(VOBJS) version.txt
 	$(RM) $(XVERSION)
 
 FALLBACKS = fb-common fb-printSession fb-messages fb-composeMap fb-c3270
+MKFB_KIOSK = @MKFB_KIOSK@
 fallbacks.c: mkfb.py $(FALLBACKS)
 	$(RM) $@
-	$(PYTHON) $< -c -o $@ $(filter-out %.py,$^)
+	$(PYTHON) $< -c @MKFB_KIOSK@ -o $@ $(filter-out %.py,$^)
 
 keypad.o: compiled_keypad.h
 
