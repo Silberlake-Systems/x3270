@@ -1402,6 +1402,17 @@ pager_exit(ioid_t id, int status)
 FILE *
 start_pager(void)
 {
+#if defined(X3270_KIOSK) /*[*/
+    /*
+     * Kiosk: never spawn a pager subprocess. A pager (less/more) exposes
+     * shell (!) and editor (v) escapes, which would be a full breakout.
+     * Send output straight to stdout instead.
+     */
+    if (pager.fp == NULL) {
+	pager.fp = stdout;
+    }
+    return pager.fp;
+#endif /*]*/
 #if !defined(_WIN32) /*[*/
     static char *lesspath = LESSPATH;
     static char *lesscmd = LESSPATH " -EXR";
@@ -1755,6 +1766,10 @@ Escape_action(ia_t ia, unsigned argc, const char **argv)
     }
 
     if (!escaped) {
+#if defined(X3270_KIOSK) /*[*/
+	/* Kiosk: Escape() never opens the prompt or runs a command. */
+	return true;
+#endif /*]*/
 	if (appres.secure && argc == 0) {
 	    /* Plain Escape() does nothing when secure. */
 	    return true;

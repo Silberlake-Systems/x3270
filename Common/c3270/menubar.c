@@ -914,6 +914,10 @@ static file_menu_enum fm_insecure[] = {
 #if defined(X3270_KIOSK) /*[*/
     FM_QUIT,
     FM_DISC,
+    FM_COPYRIGHT,
+    FM_STATUS,
+    FM_ABOUT,
+    FM_KEYMAP,
 #endif /*]*/
 #if defined(HAVE_START) /*[*/
     FM_HELP,
