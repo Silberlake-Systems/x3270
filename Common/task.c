@@ -490,6 +490,11 @@ scriptport_toggle_upcall(const char *name, const char *value, unsigned flags, ia
     struct sockaddr *sa;
     socklen_t sa_len;
 
+    if (appres.secure && value != NULL && *value) {
+	popup_an_error("%s is disabled in secure mode", name);
+	return TU_FAILURE;
+    }
+
     if (global_peer_listen != NULL) {
 	peer_shutdown(global_peer_listen);
 	global_peer_listen = NULL;

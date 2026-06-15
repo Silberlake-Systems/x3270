@@ -898,6 +898,11 @@ hio_toggle_upcall(const char *name, const char *value, unsigned flags, ia_t ia)
     struct sockaddr *sa;
     socklen_t sa_len;
 
+    if (appres.secure && value != NULL && *value) {
+	popup_an_error("%s is disabled in secure mode", name);
+	return TU_FAILURE;
+    }
+
     hio_stop();
     if (value == NULL || !*value) {
 	Replace(appres.httpd_port, NULL);
