@@ -542,6 +542,11 @@ toggle_screenTrace(toggle_index_t ix _is_unused, enum toggle_type tt)
 
     if (toggled(SCREEN_TRACE)) {
 	/* Turn it on. */
+	if (appres.secure && tt != TT_INITIAL) {
+	    /* Secure/kiosk: never open a screen-trace file or printer. */
+	    set_toggle(SCREEN_TRACE, false);
+	    return;
+	}
 	screentrace_resource_setup();
 	vstatus_screentrace((screentrace_count = 0));
 	if (onetime_screentrace_name != NULL) {
