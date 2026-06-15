@@ -828,6 +828,11 @@ Type 'help' for help information.\n\n",
     /* Handle run-time signals. */
     signal(SIGINT, common_handler);
     signal(SIGTSTP, common_handler);
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: do not let Ctrl-\ (SIGQUIT) or Ctrl-Z (SIGTSTP) terminate/suspend. */
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+#endif /*]*/
 #endif /*]*/
     task_cb_init_ir_state(&command_ir_state);
 
@@ -1003,11 +1008,13 @@ synchronous_signal(iosrc_t fd, ioid_t id)
 #if defined(HAVE_LIBREADLINE) /*[*/
 	    rl_callback_handler_remove();
 #endif /*]*/
+#if !defined(X3270_KIOSK) /*[*/
 	    kill(getpid(), SIGSTOP);
 	    /* Process stops here. The following is run when it resumes. */
 	    if (!PAGER_RUNNING) {
 		display_prompt();
 	    }
+#endif /*]*/
 	}
     }
 }
