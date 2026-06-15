@@ -473,6 +473,11 @@ pr3287_start_now(const char *lu, bool associated)
     const char *syncopt;
     varbuf_t r;
 
+    if (appres.secure) {
+	/* Secure/kiosk: never start a pr3287 printer session (it forks /bin/sh). */
+	return;
+    }
+
     assert(pr3287_state == PRS_NONE);
 
     /* Select the command line to use. */
