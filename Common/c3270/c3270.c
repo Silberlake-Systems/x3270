@@ -2026,6 +2026,11 @@ merge_profile(void)
 	return did_read;
     }
 
+#if defined(X3270_KIOSK) /*[*/
+    /* Kiosk: ignore the user's ~/.c3270pro; only root-installed resources apply. */
+    return did_read;
+#endif /*]*/
+
     /* Read the file. */
     fname = getenv(PROFILE_ENV);
     if (fname == NULL || *fname == '\0') {
