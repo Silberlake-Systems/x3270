@@ -785,8 +785,10 @@ start_trace_window(const char *path)
 {
     const char *errmsg;
     console_desc_t *t = find_console(&errmsg);
+#if !defined(X3270_KIOSK) /*[*/
     const char **argv = NULL;
     int argc = 0;
+#endif /*]*/
 
     if (t == NULL) {
 	popup_an_error("Trace window: %s", errmsg);
@@ -795,6 +797,7 @@ start_trace_window(const char *path)
 
     switch (tracewindow_pid = fork_child()) {
     case 0:	/* child process */
+#if !defined(X3270_KIOSK) /*[*/
 	argc = console_args(t, path, &argv, argc);
 	array_add(&argv, argc++, "/bin/sh");
 	array_add(&argv, argc++, "-c");
@@ -806,6 +809,7 @@ start_trace_window(const char *path)
 	array_add(&argv, argc++, NULL);
 	execvp(t->program, (char *const*)argv);
 	perror(Asprintf("exec(%s) failed", t->program));
+#endif /*]*/
 	_exit(1);
 	break;
     default:	/* parent */
@@ -1118,17 +1122,21 @@ Trace_action(ia_t ia, unsigned argc, const char **argv)
 void
 trace_register(void)
 {
+#if !defined(X3270_KIOSK) /*[*/
      static action_table_t actions[] = {
 	 { AnTrace,	Trace_action,	ACTION_KE },
      };
+#endif /*]*/
     static toggle_register_t toggles[] = {
 	{ TRACING,
 	  toggle_tracing,
 	  TOGGLE_NEED_INIT | TOGGLE_NEED_CLEANUP },
     };
 
+#if !defined(X3270_KIOSK) /*[*/
     /* Register our actions. */
     register_actions(actions, array_count(actions));
+#endif /*]*/
 
     /* Register our toggles. */
     register_toggles(toggles, array_count(toggles));

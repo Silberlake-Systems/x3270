@@ -859,13 +859,17 @@ screentrace_register(void)
 	  toggle_screenTrace,
 	  TOGGLE_NEED_INIT | TOGGLE_NEED_CLEANUP }
     };
+#if !defined(X3270_KIOSK) /*[*/
     static action_table_t actions[] = {
 	{ AnScreenTrace,        ScreenTrace_action,     ACTION_KE }
     };
+#endif /*]*/
 
     /* Register the toggles. */
     register_toggles(toggles, array_count(toggles));
 
+#if !defined(X3270_KIOSK) /*[*/
     /* Register the actions. */
     register_actions(actions, array_count(actions));
+#endif /*]*/
 }

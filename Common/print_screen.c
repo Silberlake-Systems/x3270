@@ -632,10 +632,12 @@ print_file_name(const char *dir)
 void
 print_screen_register(void)
 {
+#if !defined(X3270_KIOSK) /*[*/
     static action_table_t print_text_actions[] = {
 	{ AnPrintText,		PrintText_action,	ACTION_KE },
     };
 
     /* Register the actions. */
     register_actions(print_text_actions, array_count(print_text_actions));
+#endif /*]*/
 }

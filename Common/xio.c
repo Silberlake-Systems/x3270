@@ -165,6 +165,7 @@ x3270_exit(int n)
 #endif /*]*/
 }
 
+#if !defined(X3270_KIOSK) /*[*/
 /*
  * Delayed Quit.
  * Called with a zero timeout so that the Quit() action can return
@@ -206,6 +207,7 @@ Quit_action(ia_t ia, unsigned argc, const char **argv)
     }
     return false;
 }
+#endif /*]*/
 
 /*
  * X I/O module registration.
@@ -213,6 +215,7 @@ Quit_action(ia_t ia, unsigned argc, const char **argv)
 void
 xio_register(void)
 {
+#if !defined(X3270_KIOSK) /*[*/
     static action_table_t xio_actions[] = {
 	{ AnQuit,		Quit_action,	ACTION_KE },
 	{ AnExit,		Quit_action,	ACTION_KE }
@@ -220,4 +223,5 @@ xio_register(void)
 
     /* Register our actions. */
     register_actions(xio_actions, array_count(xio_actions));
+#endif /*]*/
 }

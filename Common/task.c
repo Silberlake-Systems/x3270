@@ -321,7 +321,9 @@ static action_t CloseScript_action;
 static action_t Ebcdic_action;
 static action_t Ebcdic1_action;
 static action_t EbcdicField_action;
+#if !defined(X3270_KIOSK) /*[*/
 static action_t Execute_action;
+#endif /*]*/
 static action_t Expect_action;
 static action_t KeyboardDisable_action;
 static action_t Macro_action;
@@ -336,7 +338,9 @@ static action_t ResumeInput_action;
 static action_t RequestInput_action;
 
 static action_t Bell_action;
+#if !defined(X3270_KIOSK) /*[*/
 static action_t Printer_action;
+#endif /*]*/
 
 static unsigned char calc_cs(unsigned char cs);
 
@@ -615,7 +619,9 @@ task_register(void)
 	{ AnEbcdic1,		Ebcdic1_action, 0 },
 	{ AnEbcdicField,	EbcdicField_action, 0 },
 	{ AnEcho,		Echo_action, 0 },
+#if !defined(X3270_KIOSK) /*[*/
 	{ AnExecute,		Execute_action, ACTION_KE },
+#endif /*]*/
 	{ AnExpect,		Expect_action, 0 },
 	{ AnFail,		Fail_action, 0 },
 	{ Anignore,		ignore_action, ACTION_KE },
@@ -628,14 +634,20 @@ task_register(void)
 	{ AnReadBuffer,		ReadBuffer_action, 0 },
 	{ RESUME_INPUT,		ResumeInput_action, ACTION_HIDDEN },
 	{ AnRequestInput,	RequestInput_action, ACTION_HIDDEN },
+#if !defined(X3270_KIOSK) /*[*/
 	{ AnScript,		Script_action, ACTION_KE },
+#endif /*]*/
 	{ AnSnap,		Snap_action, 0 },
+#if !defined(X3270_KIOSK) /*[*/
 	{ AnSource,		Source_action, ACTION_KE },
+#endif /*]*/
 	{ AnWait,		Wait_action, ACTION_KE }
     };
+#if !defined(X3270_KIOSK) /*[*/
     static action_table_t task_dactions[] = {
 	{ AnPrinter,		Printer_action, ACTION_KE },
     };
+#endif /*]*/
     static toggle_register_t toggles[] = {
 	{ AID_WAIT,	NULL,	0 }
     };
@@ -645,9 +657,11 @@ task_register(void)
 
     /* Register actions.*/
     register_actions(task_actions, array_count(task_actions));
+#if !defined(X3270_KIOSK) /*[*/
     if (product_has_display()) {
 	register_actions(task_dactions, array_count(task_dactions));
     }
+#endif /*]*/
 
     /* Register toggles. */
     register_toggles(toggles, array_count(toggles));
@@ -4060,6 +4074,7 @@ CloseScript_action(ia_t ia, unsigned argc, const char **argv)
     }
 }
 
+#if !defined(X3270_KIOSK) /*[*/
 /* Execute an arbitrary shell command. */
 static bool
 Execute_action(ia_t ia, unsigned argc, const char **argv)
@@ -4085,6 +4100,7 @@ Execute_action(ia_t ia, unsigned argc, const char **argv)
     array_add(&nargv, nargc, NULL);
     return Script_action(ia, nargc, nargv);
 }
+#endif /*]*/
 
 /* Timeout for Expect action. */
 static void
@@ -4251,6 +4267,7 @@ Macro_action(ia_t ia, unsigned argc, const char **argv)
     return false;
 }
 
+#if !defined(X3270_KIOSK) /*[*/
 /* "Printer" action, starts or stops a printer session. */
 static bool
 Printer_action(ia_t ia, unsigned argc, const char **argv)
@@ -4272,6 +4289,7 @@ Printer_action(ia_t ia, unsigned argc, const char **argv)
     }
     return true;
 }
+#endif /*]*/
 
 /*
  * Abort a queue.
